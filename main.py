@@ -122,9 +122,19 @@ class AddressBook(UserDict):
             return 'we dont have this number'
     
     def __str__(self):
-        for person in self.data:
-            phones_str = '; '.join(self.data.person['phones'])
-            return f"Contact name: {self.name.value}, phones: {phones_str}, birthday: {self.birthday}"
+        keys = list(self.data.keys())
+        counter = 0
+        result = ''
+        while counter < len(keys)-1:
+            person_data = self.data[keys[counter]]
+            counter +=1
+            new_str = f'{person_data}\n'
+            result += new_str
+        else:
+            person_data = self.data[keys[counter]]
+            new_str = f'{person_data}'
+            result += new_str
+        return result
     
     def get_upcoming_birthdays(self, days=7):
         upcoming_birthdays = []
@@ -253,22 +263,22 @@ def main():
         else:
             print("Invalid command.")
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
 
-book = AddressBook()
+# book = AddressBook()
 john_record = Record("John")
 john_record.add_phone("1234567890")
 john_record.add_phone("5555555555")
 john_record.add_birthday('10.10.2005')
-book.add_record(john_record)
+# book.add_record(john_record)
 
 jane_record = Record("Jane")
 jane_record.add_phone("9876543210")
 jane_record.add_birthday('11.11.2001')
-book.add_record(jane_record)
+# book.add_record(jane_record)
 
 # upcoming_birthdays = book.get_upcoming_birthdays()
 # print(upcoming_birthdays)
 
-print(book)
+# print(book)
