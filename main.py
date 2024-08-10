@@ -15,7 +15,7 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value):
         if len(value) != 10:
-             raise ValueError('phone should have 10 numbers')
+            raise ValueError('phone should have 10 numbers')
         else:
             self.value = value
         
@@ -79,10 +79,8 @@ class Record:
 def string_to_date(date_string):
     return datetime.strptime(date_string, "%Y.%m.%d").date()
 
-
 def date_to_string(date):
     return date.strftime("%Y.%m.%d")
-
 
 def prepare_user_list(user_data):
     prepared_list = []
@@ -90,13 +88,11 @@ def prepare_user_list(user_data):
         prepared_list.append({"name": user["name"], "birthday": string_to_date(user["birthday"])})
     return prepared_list
 
-
 def find_next_weekday(start_date, weekday):
     days_ahead = weekday - start_date.weekday()
     if days_ahead <= 0:
         days_ahead += 7
     return start_date + timedelta(days=days_ahead)
-
 
 def adjust_for_weekend(birthday):
     if birthday.weekday() >= 5:
@@ -163,19 +159,23 @@ class AddressBook(UserDict):
         return upcoming_birthdays
     
 # bot block
-
 # decorators
 
 def input_error_add(func):
-    def inner(*args, **kwargs):
+    def inner(name: Name, phone: Phone):
         try:
-            return func(*args, **kwargs)
+            # print(name)
+            # if len(phone) != 10:
+            #     print(phone)
+            #     return('phone should have 10 numbers')
+            # else:
+            return func(name, phone)
         except ValueError:
-            return "Enter name and phone for the command"
+            return "Not apropriate number of values. Try enter name and phone for the command"
         except KeyError:
             return "We don't have this name in data base, try another"
         except IndexError:
-            return "Please try pattern 'add Bob 123456789'"
+            return "Please try pattern 'add Bob 1234567890'"
     return inner
 
 def input_error_change(func):
@@ -217,7 +217,7 @@ def parse_input(user_input):
 
 @input_error_add
 def add_contact(args, book: AddressBook):
-    name, phone, *_ = args
+    name, phone = args
     record = book.find(name)
     message = "Contact updated."
     if record is None:
@@ -242,7 +242,7 @@ def change_contact(args, book: AddressBook):
 
 @input_error_phone
 def show_phone(args, book: AddressBook):
-    name, *_ = args
+    name = args
     record = book.find(name)
     if record:
         return record.get_phone()
@@ -262,7 +262,7 @@ def add_birthday(args, book: AddressBook):
 
 # @input_error
 def show_birthday(args, book: AddressBook):
-    name, *_ = args
+    name = args
     record = book.find(name)
     if record:
         return record.get_bd()
