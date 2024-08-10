@@ -151,7 +151,7 @@ class AddressBook(UserDict):
             birthday_this_year = bd.replace(year=today.year)
             # print(birthday_this_year)
             if birthday_this_year < today:
-                birthday_this_year = user["birthday"].replace(year=today.year+1)
+                birthday_this_year = bd.replace(year=today.year+1)
                 
 
             if 0 <= (birthday_this_year - today).days <= days:
@@ -163,14 +163,6 @@ class AddressBook(UserDict):
         return upcoming_birthdays
     
 # bot block
-
-# def input_error(func):
-#     def inner(*args, **kwargs):
-#         try:
-#             func(*args, **kwargs)
-#         except (TypeError, ValueError):
-#             print(f"for function {func.__name__}: wrong input")
-#     return inner
 
 # decorators
 
@@ -210,6 +202,14 @@ def input_error_phone(func):
             return "Please try pattern 'phone Dave'"
     return inner
 
+def input_error(func):
+    def inner(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except (TypeError, ValueError, IndexError, KeyError):
+            print(f"for function {func.__name__}: wrong input")
+    return inner
+
 def parse_input(user_input):
     cmd, *args = user_input.split(' ')
     cmd = cmd.strip().lower()
@@ -244,31 +244,28 @@ def change_contact(args, book: AddressBook):
 def show_phone(args, book: AddressBook):
     name, *_ = args
     record = book.find(name)
-    if record in book:
-        return record['phones']
+    if record:
+        return record.get_phone()
     else:
         print('we dont have this contact')
 
 def show_all(args, book: AddressBook):
     return book
 
-# @input_error
+@input_error
 def add_birthday(args, book: AddressBook):
-    name, birthday, *_ = args
+    name, birthday = args
     record = book.find(name)
-    if record in book:
-        record['birthday'] = birthday
-    else:
-        print('we dont have this contact, please use add command')
+    record.add_birthday(birthday)
+    message = "Birthday added."
+    return message
 
 # @input_error
 def show_birthday(args, book: AddressBook):
     name, *_ = args
     record = book.find(name)
-    if record in book:
-        return record['birthday']
-    else:
-        print('we dont have this contact')
+    if record:
+        return record.get_bd()
 
 # @input_error
 def birthdays(args, book: AddressBook):
@@ -324,3 +321,10 @@ if __name__ == "__main__":
 
 # find_jane = book.find('Jane')
 # print(find_jane)
+
+#  add john 12345
+#  add jane 987654
+#  add-birthday john 01.01.2001
+#  add-birthday jane 02.02.2001
+#  show-birthday john
+#  birthdays
