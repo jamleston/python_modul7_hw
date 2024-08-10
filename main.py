@@ -1,5 +1,5 @@
 from collections import UserDict
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 
 class Field:
     def __init__(self, value):
@@ -33,7 +33,7 @@ class Record:
         self.birthday = None
 
     def add_phone(self, phone: Phone):
-          self.phones.append(phone)
+        self.phones.append(phone)
 
     def remove_phone(self, phone_to_remove):
           for phone in self.phones:
@@ -65,6 +65,9 @@ class Record:
     
     def get_name(self):
         return self.name
+    
+    def get_phone(self):
+        return self.phones
             
 
     def __str__(self):
@@ -161,12 +164,50 @@ class AddressBook(UserDict):
     
 # bot block
 
-def input_error(func):
+# def input_error(func):
+#     def inner(*args, **kwargs):
+#         try:
+#             func(*args, **kwargs)
+#         except (TypeError, ValueError):
+#             print(f"for function {func.__name__}: wrong input")
+#     return inner
+
+# decorators
+
+def input_error_add(func):
     def inner(*args, **kwargs):
         try:
-            func(*args, **kwargs)
-        except (TypeError, ValueError):
-            print(f"for function {func.__name__}: wrong input")
+            return func(*args, **kwargs)
+        except ValueError:
+            return "Enter name and phone for the command"
+        except KeyError:
+            return "We don't have this name in data base, try another"
+        except IndexError:
+            return "Please try pattern 'add Bob 123456789'"
+    return inner
+
+def input_error_change(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError:
+            return "Enter name and phone for the command"
+        except KeyError:
+            return "We don't have this name in data base, try another"
+        except IndexError:
+            return "Please try pattern 'change Ross 123456789'"
+    return inner
+
+def input_error_phone(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError:
+            return "Enter name for the command"
+        except KeyError:
+            return "We don't have this name in data base, try another"
+        except IndexError:
+            return "Please try pattern 'phone Dave'"
     return inner
 
 def parse_input(user_input):
@@ -174,7 +215,7 @@ def parse_input(user_input):
     cmd = cmd.strip().lower()
     return cmd, *args
 
-@input_error
+@input_error_add
 def add_contact(args, book: AddressBook):
     name, phone, *_ = args
     record = book.find(name)
@@ -187,18 +228,19 @@ def add_contact(args, book: AddressBook):
         record.add_phone(phone)
     return message
 
-@input_error
+@input_error_change
 def change_contact(args, book: AddressBook):
-    name, phone, *_ = args
+    name, phone = args
     record = book.find(name)
-    if record in book:
-        record['phones'] = phone
+    if record:
+        phones = record.get_phone()
+        phone_to_remove = phones[0]
+        record.remove_phone(phone_to_remove)
+        record.add_phone(phone)
         message = "Contact updated."
         return message
-    else:
-        print('we dont have this contact')
 
-@input_error
+@input_error_phone
 def show_phone(args, book: AddressBook):
     name, *_ = args
     record = book.find(name)
@@ -207,11 +249,10 @@ def show_phone(args, book: AddressBook):
     else:
         print('we dont have this contact')
 
-@input_error
 def show_all(args, book: AddressBook):
     return book
 
-@input_error
+# @input_error
 def add_birthday(args, book: AddressBook):
     name, birthday, *_ = args
     record = book.find(name)
@@ -220,7 +261,7 @@ def add_birthday(args, book: AddressBook):
     else:
         print('we dont have this contact, please use add command')
 
-@input_error
+# @input_error
 def show_birthday(args, book: AddressBook):
     name, *_ = args
     record = book.find(name)
@@ -229,7 +270,7 @@ def show_birthday(args, book: AddressBook):
     else:
         print('we dont have this contact')
 
-@input_error
+# @input_error
 def birthdays(args, book: AddressBook):
     upcoming_birthdays = book.get_upcoming_birthdays()
     return upcoming_birthdays
@@ -267,18 +308,19 @@ if __name__ == "__main__":
     main()
 
 # book = AddressBook()
-john_record = Record("John")
-john_record.add_phone("1234567890")
-john_record.add_phone("5555555555")
-john_record.add_birthday('10.10.2005')
+# john_record = Record("John")
+# john_record.add_phone("1234567890")
+# john_record.add_phone("5555555555")
+# john_record.add_birthday('10.10.2005')
 # book.add_record(john_record)
 
-jane_record = Record("Jane")
-jane_record.add_phone("9876543210")
-jane_record.add_birthday('11.11.2001')
+# jane_record = Record("Jane")
+# jane_record.add_phone("9876543210")
+# jane_record.add_birthday('11.11.2001')
 # book.add_record(jane_record)
 
 # upcoming_birthdays = book.get_upcoming_birthdays()
 # print(upcoming_birthdays)
 
-# print(book)
+# find_jane = book.find('Jane')
+# print(find_jane)
